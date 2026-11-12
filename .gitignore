@@ -10,3 +10,6 @@ data/raw/
 
 # 系统文件
 .DS_Store
+
+# 脱敏脚本（内含真实姓名/公司等 PII 映射，仅本地保留，绝不提交）
+tools/classify/scrub_pii.py

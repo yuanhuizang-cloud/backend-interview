@@ -75,7 +75,7 @@ Topic
 
 如果同一个 fileKey 需要有序，一般 producer 用相同 key，使消息映射到同一 partition。
 
-这正对应你的 MasterGo 场景：
+这正对应你的 某协同产品 场景：
 
 纯文本
 fileKey
@@ -287,7 +287,7 @@ Flink / Spark / Stream Processing
 多个消费者从不同 offset 独立消费
 AI / 数据平台事件总线
 
-比如你的 MasterGo changeset 链路，用 Kafka是合理的：
+比如你的 某协同产品 changeset 链路，用 Kafka是合理的：
 
 高吞吐变更流 + partition 并行 + 可回放，同时业务层再通过版本游标保证正确性。
 
@@ -333,6 +333,6 @@ Kafka 和 RocketMQ 怎么选？
 
 这个回答已经是比较好的资深后端口径。
 
-对于你自己的项目，MasterGo 一定要按 Kafka 讲，不要再混成 RocketMQ；而如果面试官追问“为什么当时不用 RocketMQ”，重点可以从 高吞吐变更流、Kafka 生态、可回放、已有基础设施 这几个维度回答，而不是说 RocketMQ 不好。
+对于你自己的项目，某协同产品 一定要按 Kafka 讲，不要再混成 RocketMQ；而如果面试官追问“为什么当时不用 RocketMQ”，重点可以从 高吞吐变更流、Kafka 生态、可回放、已有基础设施 这几个维度回答，而不是说 RocketMQ 不好。
 
 昨天 10:52

@@ -65,7 +65,7 @@ BeBee
 结合真实 JD 和简历可转化性，本周优先级为：
 
 技术能力	JD 证据	面经证据	个人项目关联	优先级
-分布式一致性、幂等、状态机	强	有支持	MasterGo、Agent	P0
+分布式一致性、幂等、状态机	强	有支持	某协同产品、Agent	P0
 Go 性能与线上故障	强	有支持	Python→Go 重构	P0
 Agent Runtime、任务恢复	强	样本有限	AI Review 原型	P0
 Agent Eval、安全、Tool Calling	强	样本有限	AI 研发效能项目	P1
