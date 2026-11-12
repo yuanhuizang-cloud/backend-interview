@@ -1,5 +1,9 @@
 # 后端面试题库
 
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Questions](https://img.shields.io/badge/questions-81-2f6fed.svg)](#分类一览)
+[![Sources](https://img.shields.io/badge/sources-ChatGPT%20%7C%20Doubao%20%7C%20Gemini-green.svg)](#后端面试题库)
+
 从 **ChatGPT / 豆包 / Gemini** 过往会话中汇总整理的后端工程师面试题库，按「题型」两级分类，附离线 HTML 刷题器。
 
 - 📚 题库正文：`content/` 下按 **一级分类 / 二级分类** 组织的 Markdown
