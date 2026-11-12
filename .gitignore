@@ -1,0 +1,12 @@
+# 依赖
+node_modules/
+
+# 浏览器持久化登录 profile（含你的登录态，绝不提交）
+.browser-profile/
+.chrome-cdp/
+
+# 原始全量会话抓取（含个人隐私，仅本地，绝不提交）
+data/raw/
+
+# 系统文件
+.DS_Store

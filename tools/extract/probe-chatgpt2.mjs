@@ -1,0 +1,14 @@
+import { chromium } from 'playwright';
+import { PROFILE_DIR } from './common.mjs';
+const ctx = await chromium.launchPersistentContext(PROFILE_DIR, { channel: 'chrome', headless: false, viewport: { width: 1280, height: 900 }, ignoreDefaultArgs: ['--enable-automation'], args: ['--disable-blink-features=AutomationControlled'] });
+const p = await ctx.newPage();
+await p.goto('https://chatgpt.com/', { waitUntil: 'domcontentloaded', timeout: 60000 }).catch(()=>{});
+await p.waitForTimeout(6000);
+const me = await p.evaluate(async () => { try { const r = await fetch('/backend-api/me'); return r.ok ? await r.json() : null; } catch { return null; } });
+console.log('URL:', p.url());
+console.log('/me:', JSON.stringify({ email: me?.email, name: me?.name, id: me?.id }));
+const conv = await p.evaluate(async () => { try { const r = await fetch('/backend-api/conversations?offset=0&limit=5'); return r.ok ? await r.json() : null; } catch { return null; } });
+console.log('conversations total =', conv?.total);
+const body = await p.locator('body').innerText().catch(()=> '');
+console.log('body 前 600 字:', body.slice(0,600).replace(/\n+/g,' | '));
+await p.close(); await ctx.close();

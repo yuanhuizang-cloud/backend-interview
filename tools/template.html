@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>后端面试题库</title>
+<style>
+:root {
+  --bg: #f7f7f8; --card: #ffffff; --text: #1f1f23; --muted: #6b7280;
+  --border: #e5e7eb; --accent: #2f6fed; --accent-soft: #e8effd;
+  --tag: #eef2ff; --tag-text: #3b5bdb; --code: #f4f4f5; --user: #fef9c3;
+  --ok: #16a34a; --again: #dc2626;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #1a1a1e; --card: #232327; --text: #ececec; --muted: #9ca3af;
+  --border: #333338; --accent: #6b9aff; --accent-soft: #26314d;
+  --tag: #2a2f42; --tag-text: #9db6ff; --code: #2b2b30; --user: #4a3f16;
+} }
+:root[data-theme="dark"] {
+  --bg: #1a1a1e; --card: #232327; --text: #ececec; --muted: #9ca3af;
+  --border: #333338; --accent: #6b9aff; --accent-soft: #26314d;
+  --tag: #2a2f42; --tag-text: #9db6ff; --code: #2b2b30; --user: #4a3f16;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+header { position: sticky; top: 0; z-index: 10; background: var(--card); border-bottom: 1px solid var(--border); padding: 12px 16px; }
+header .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+h1 { font-size: 17px; margin: 0 12px 0 0; white-space: nowrap; }
+input[type=search] { flex: 1; min-width: 180px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; }
+select, button { padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--text); font-size: 13px; cursor: pointer; }
+button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.stats { display: flex; gap: 14px; flex-wrap: wrap; padding: 10px 16px; font-size: 13px; color: var(--muted); border-bottom: 1px solid var(--border); }
+.stats b { color: var(--accent); }
+main { max-width: 860px; margin: 0 auto; padding: 16px; }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+.q-head { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
+.badge { font-size: 12px; padding: 2px 8px; border-radius: 6px; background: var(--accent-soft); color: var(--accent); }
+.badge.diff-easy { background: #dcfce7; color: #15803d; }
+.badge.diff-medium { background: #fef3c7; color: #b45309; }
+.badge.diff-hard { background: #fee2e2; color: #b91c1c; }
+.badge.src { background: var(--tag); color: var(--tag-text); }
+.q-title { font-size: 15px; font-weight: 600; cursor: pointer; }
+.q-title:hover { color: var(--accent); }
+.answer { display: none; margin-top: 10px; padding: 12px; background: var(--code); border-radius: 8px; font-size: 14px; white-space: pre-wrap; word-break: break-word; }
+.answer.show { display: block; }
+.reveal { margin-top: 8px; }
+.empty { text-align: center; color: var(--muted); padding: 40px 0; }
+.tag { display: inline-block; font-size: 12px; margin: 2px 4px 2px 0; padding: 1px 7px; border-radius: 5px; background: var(--tag); color: var(--tag-text); }
+.quiz-bar { display: flex; gap: 8px; margin-top: 12px; }
+.quiz-bar button { flex: 1; }
+.mastered { opacity: .55; }
+.mastered .q-title::after { content: " ✓"; color: var(--ok); }
+#progress { font-size: 12px; color: var(--muted); }
+</style>
+</head>
+<body>
+<header>
+  <div class="row">
+    <h1>后端面试题库</h1>
+    <input type="search" id="search" placeholder="搜索题目 / 答案（回车确认）">
+    <button id="themeBtn" title="切换主题">🌓</button>
+    <button id="quizBtn">刷题模式</button>
+  </div>
+  <div class="row" style="margin-top:8px;">
+    <select id="fCat"><option value="">全部模块</option></select>
+    <select id="fSub"><option value="">全部子类</option></select>
+    <select id="fType"><option value="">全部题型</option></select>
+    <select id="fDiff"><option value="">全部难度</option><option value="easy">easy</option><option value="medium">medium</option><option value="hard">hard</option></select>
+    <select id="fSrc"><option value="">全部来源</option></select>
+    <select id="fMaster"><option value="">全部掌握状态</option><option value="yes">已掌握</option><option value="no">需复习</option></select>
+  </div>
+</header>
+<div class="stats" id="stats"></div>
+<main id="list"></main>
+
+<script>
+const QUESTIONS = __QUESTIONS_JSON__;
+const $ = (s) => document.querySelector(s);
+let search = '', cat = '', sub = '', type = '', diff = '', src = '', master = '';
+let quizMode = false;
+let quizOrder = [];
+let quizIdx = 0;
+const LS = 'interview-mastered-v1';
+let mastered = new Set(JSON.parse(localStorage.getItem(LS) || '[]'));
+
+function save() { try { localStorage.setItem(LS, JSON.stringify([...mastered])); } catch {} }
+
+function fillSelect(sel, values, label) {
+  sel.innerHTML = `<option value="">全部${label}</option>` + values.map(v => `<option>${v}</option>`).join('');
+}
+fillSelect($('#fCat'), [...new Set(QUESTIONS.map(q => q.category))], '模块');
+fillSelect($('#fType'), [...new Set(QUESTIONS.map(q => q.type))], '题型');
+fillSelect($('#fSrc'), [...new Set(QUESTIONS.flatMap(q => q.sources))], '来源');
+
+function filtered() {
+  return QUESTIONS.filter(q => {
+    if (cat && q.category !== cat) return false;
+    if (sub && q.subcategory !== sub) return false;
+    if (type && q.type !== type) return false;
+    if (diff && q.difficulty !== diff) return false;
+    if (src && !q.sources.includes(src)) return false;
+    if (master === 'yes' && !mastered.has(q.id)) return false;
+    if (master === 'no' && mastered.has(q.id)) return false;
+    if (search) {
+      const s = search.toLowerCase();
+      const hay = (q.question + ' ' + q.answer + ' ' + q.tags.join(' ')).toLowerCase();
+      if (!hay.includes(s)) return false;
+    }
+    return true;
+  });
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function renderAnswer(q) {
+  const md = q.answer;
+  // 简单 markdown：代码块 + 行内代码 + 粗体
+  let html = escapeHtml(md);
+  html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => `<pre style="overflow:auto;background:var(--bg);padding:8px;border-radius:6px;"><code>${escapeHtml(code)}</code></pre>`);
+  html = html.replace(/`([^`\n]+)`/g, '<code style="background:var(--bg);padding:1px 5px;border-radius:4px;">$1</code>');
+  html = html.replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+  html = html.replace(/\n/g, '<br>');
+  return html;
+}
+
+function render() {
+  const subs = [...new Set(QUESTIONS.filter(q => q.category === cat).map(q => q.subcategory).filter(Boolean))];
+  fillSelect($('#fSub'), subs, '子类');
+  let qs = filtered();
+  $('#stats').innerHTML = `<span>共 <b>${QUESTIONS.length}</b> 题</span><span>当前 <b>${qs.length}</b> 题</span><span>已掌握 <b>${[...mastered].filter(id => QUESTIONS.some(q => q.id === id)).length}</b></span><span id="progress"></span>`;
+
+  if (quizMode) {
+    qs = qs.filter(q => !mastered.has(q.id)); // 刷题默认只看未掌握
+    if (!qs.length) { $('#list').innerHTML = `<div class="empty">🎉 当前筛选下已全部掌握</div>`; return; }
+    quizOrder = qs.map(q => q.id);
+    quizIdx = Math.min(quizIdx, quizOrder.length - 1);
+    renderQuiz();
+    return;
+  }
+
+  if (!qs.length) { $('#list').innerHTML = `<div class="empty">没有匹配的题目</div>`; return; }
+  $('#list').innerHTML = qs.map(q => `
+    <div class="card ${mastered.has(q.id) ? 'mastered' : ''}" id="c-${q.id}">
+      <div class="q-head">
+        <span class="badge">${escapeHtml(q.category)}${q.subcategory ? ' / ' + escapeHtml(q.subcategory) : ''}</span>
+        <span class="badge">${escapeHtml(q.type)}</span>
+        <span class="badge diff-${q.difficulty}">${q.difficulty}</span>
+        ${q.sources.map(s => `<span class="badge src">${escapeHtml(s)}</span>`).join('')}
+      </div>
+      <div class="q-title" onclick="toggle('${q.id}')">${escapeHtml(q.question)}</div>
+      ${q.tags.length ? `<div>${q.tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>` : ''}
+      <div class="answer" id="a-${q.id}">${renderAnswer(q)}</div>
+      <button class="reveal" onclick="toggle('${q.id}')">显示答案</button>
+    </div>`).join('');
+}
+
+function renderQuiz() {
+  const q = QUESTIONS.find(x => x.id === quizOrder[quizIdx]);
+  if (!q) { $('#list').innerHTML = `<div class="empty">没有题目</div>`; return; }
+  $('#progress').textContent = `刷题 ${quizIdx + 1}/${quizOrder.length}`;
+  $('#list').innerHTML = `
+    <div class="card">
+      <div class="q-head">
+        <span class="badge">${escapeHtml(q.category)}${q.subcategory ? ' / ' + escapeHtml(q.subcategory) : ''}</span>
+        <span class="badge">${escapeHtml(q.type)}</span>
+        <span class="badge diff-${q.difficulty}">${q.difficulty}</span>
+      </div>
+      <div class="q-title">${escapeHtml(q.question)}</div>
+      ${q.tags.length ? `<div>${q.tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>` : ''}
+      <div class="answer" id="a-${q.id}">${renderAnswer(q)}</div>
+      <div class="quiz-bar">
+        <button onclick="revealQuiz()">显示答案</button>
+        <button onclick="mark('${q.id}', true)">会了 ✓</button>
+        <button onclick="mark('${q.id}', false)">再看 ↻</button>
+      </div>
+    </div>`;
+}
+
+function toggle(id) {
+  const a = $('#a-' + id);
+  if (!a) return;
+  const show = !a.classList.contains('show');
+  a.classList.toggle('show', show);
+  const btn = a.previousElementSibling;
+  if (btn && btn.classList.contains('reveal')) btn.textContent = show ? '隐藏答案' : '显示答案';
+}
+function revealQuiz() { const a = document.querySelector('.answer'); if (a) a.classList.add('show'); }
+function mark(id, ok) {
+  if (ok) mastered.add(id); else mastered.delete(id);
+  save();
+  if (quizMode) { quizIdx = Math.min(quizIdx + 1, quizOrder.length - 1); }
+  render();
+}
+window.toggle = toggle; window.mark = mark; window.revealQuiz = revealQuiz;
+
+$('#search').addEventListener('input', (e) => { search = e.target.value.trim(); render(); });
+$('#fCat').addEventListener('change', (e) => { cat = e.target.value; sub = ''; render(); });
+$('#fSub').addEventListener('change', (e) => { sub = e.target.value; render(); });
+$('#fType').addEventListener('change', (e) => { type = e.target.value; render(); });
+$('#fDiff').addEventListener('change', (e) => { diff = e.target.value; render(); });
+$('#fSrc').addEventListener('change', (e) => { src = e.target.value; render(); });
+$('#fMaster').addEventListener('change', (e) => { master = e.target.value; render(); });
+$('#quizBtn').addEventListener('click', () => {
+  quizMode = !quizMode; quizIdx = 0;
+  $('#quizBtn').classList.toggle('active', quizMode);
+  render();
+});
+$('#themeBtn').addEventListener('click', () => {
+  const t = document.documentElement.getAttribute('data-theme');
+  document.documentElement.setAttribute('data-theme', t === 'dark' ? 'light' : 'dark');
+});
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+  if (quizMode) {
+    if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); revealQuiz(); }
+    if (e.key === 'j' || e.key === 'ArrowDown') { quizIdx = Math.min(quizIdx + 1, quizOrder.length - 1); renderQuiz(); }
+    if (e.key === 'k' || e.key === 'ArrowUp') { quizIdx = Math.max(quizIdx - 1, 0); renderQuiz(); }
+  }
+});
+
+render();
+</script>
+</body>
+</html>
