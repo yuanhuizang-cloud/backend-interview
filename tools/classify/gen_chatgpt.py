@@ -63,6 +63,9 @@ M = [
     ('Temporal 与 AI 开发', 0, 'why-temporal-durable-execution', '微服务与分布式', '工作流与调度', '概念题', 'hard', ['Temporal', '持久执行', '分布式']),
     ('Temporal 与 AI 开发', 2, 'temporal-workflow-activity-worker', '微服务与分布式', '工作流与调度', '概念题', 'medium', ['Temporal', 'Workflow', 'Activity']),
     ('grep 搜索技巧', 0, 'grep-recursive-search', '工程化与工具', 'Linux命令行', '场景题', 'easy', ['grep', 'Linux']),
+    ('GitLab Issue 功能介绍', 0, 'gitlab-issue-feature', '工程化与工具', 'Git', '概念题', 'easy', ['GitLab', 'Issue']),
+    ('GitLab Issue 功能介绍', 1, 'git-squash', '工程化与工具', 'Git', '概念题', 'easy', ['git', 'squash']),
+    ('自动化测试生成方案', 0, 'ai-test-generation', '工程化与工具', '测试', '场景题', 'medium', ['自动化测试', 'AI生成']),
 ]
 
 data = json.load(open(RAW))
